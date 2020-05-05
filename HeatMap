@@ -1,0 +1,105 @@
+  public Bitmap CreateHeatMap(Double[,] data)
+        {
+            Bitmap bm = null;
+            string func_name = "CreateHeatMap";
+            double value_R = 0, value_G = 0, value_B = 0;
+            double value, max_val;
+            const int NUM_COLORS = 4;
+            double[][] color = new double[NUM_COLORS][]
+            {
+                new double[] {0, 0, 1},
+                new double[] {0, 1, 0},
+                new double[] {1, 1, 0},
+                new double[] {1, 0, 0}
+
+            };
+                int data_height = data.GetLength(1);
+
+                // A static array of 4 colors:  (blue,   green,  yellow,  red) using {r,g,b} for each.
+                bm = new Bitmap(data.GetLength(0), data_height, PixelFormat.Format32bppArgb);
+                BitmapData bd = bm.LockBits(new Rectangle(0, 0, bm.Width, bm.Height), ImageLockMode.WriteOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+                
+                unsafe
+                {
+                    byte* ptr = (byte*)bd.Scan0;
+                
+                    for (int j = 0; j < bd.Height; j++)
+                    {
+                        byte* row = (byte*)bd.Scan0 + (j * bd.Stride);
+                        for (int i = 0; i < bd.Width; i++)
+                        {
+                            value = (double)(data[i, j] *255);
+                            if (value >= 0 && value < 0.375)
+                            {
+                                value_R = 0;
+                            }
+                            else if (value >= 0.375 && value < 0.625)
+                            {
+                                value_R = ((value - 0.375) / 0.25) * 255;
+                            }
+                            else if (value >= 0.625)
+                            {
+                                value_R = 255;
+                            }
+
+
+                            if (value >= 0 && value < 0.125)
+                            {
+                                value_G = 0;
+                            }
+                            else if (value >= 0.125 && value < 0.375)
+                            {
+                                value_G = ((value - 0.125) / 0.25) * 255;
+                            }
+                            else if (value >= 0.375 && value < 0.625)
+                            {
+                                value_G = 255;
+                            }
+                            else if (value >= 0.625 && value < 0.75)
+                            {
+                                value_G = ((0.75 - value) / 0.125) * 255;
+                            }
+                            else if (value >= 0.75)
+                            {
+                                value_G = ((value - 0.75) / 0.25) * 255;
+                            }
+
+
+                            if (value >= 0 && value < 0.375)
+                            {
+                                value_B = 255;
+                            }
+                            else if (value >= 0.375 && value < 0.5)
+                            {
+                                value_B = ((0.5 - value) / 0.25) * 255;
+                            }
+                            else if (value >= 0.5 && value < 0.75)
+                            {
+                                value_B = 0;
+                            }
+                            else if (value >= 0.75)
+                            {
+                                value_B = ((value - 0.75) / 0.25) * 255;
+                            }
+
+                            byte r = (byte)value_R;
+                            byte g = (byte)value_G;
+                            byte b = (byte)value_B;
+
+                            ptr[0] = b;
+                            ptr[1] = g;
+                            ptr[2] = r;
+                            ptr[3] = (byte)255;
+                            ptr += 4;
+                        }
+
+                        ptr += (bd.Stride - (bd.Width * 4));
+                    }
+
+                }
+
+                bm.UnlockBits(bd);
+           
+            return bm;
+        }
+
